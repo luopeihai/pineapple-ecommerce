@@ -1,0 +1,102 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { User } from './user.entity';
+import { getUserDto } from './dto/get-user.dto';
+import { conditionUtils } from 'src/utils/db.helper';
+import * as argon2 from 'argon2';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+  ) { }
+
+  findAll(query: getUserDto) {
+    const { limit, page, username } = query;
+    const take = limit || 10;
+    const skip = ((page || 1) - 1) * take;
+    // SELECT * FROM user u, profile p, role r WHERE u.id = p.uid AND u.id = r.uid AND ....
+    // SELECT * FROM user u LEFT JOIN profile p ON u.id = p.uid LEFT JOIN role r ON u.id = r.uid WHERE ....
+    // 分页 SQL -> LIMIT 10 OFFSET 10
+    // return this.userRepository.find({
+    //   select: {
+    //     id: true,
+    //     username: true,
+    //     profile: {
+    //       gender: true,
+    //     },
+    //   },
+    //   relations: {
+    //     profile: true,
+    //     roles: true,
+    //   },
+    //   where: { // AND OR
+    //     username,
+    //     profile: {
+    //       gender,
+    //     },
+    //     roles: {
+    //       id: role,
+    //     },
+    //   },
+    //   take,
+    //   skip,
+    // });
+    const obj = {
+      'user.username': username
+    };
+    // inner join vs left join vs outer join
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+    const newQuery = conditionUtils(queryBuilder, obj);
+    // if (gender) {
+    //   queryBuilder.andWhere('profile.gender = :gender', { gender });
+    // } else {
+    //   queryBuilder.andWhere('profile.gender IS NOT NULL');
+    // }
+    // if (role) {
+    //   queryBuilder.andWhere('roles.id = :role', { role });
+    // } else {
+    //   queryBuilder.andWhere('roles.id IS NOT NULL');
+    // }
+    return (
+      newQuery
+        .take(take)
+        .skip(skip)
+        // .andWhere('profile.gender = :gender', { gender })
+        // .andWhere('roles.id = :role', { role })
+        .getMany()
+    );
+  }
+
+  find(username: string) {
+    return this.userRepository.findOne({
+      where: { username },
+      relations: ['roles', 'roles.menus'],
+    });
+  }
+
+  findOne(id: number) {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  async create(user: Partial<User>) {
+
+    const userTmp = await this.userRepository.create(user);
+    // try {
+    // 对用户密码使用argon2加密
+    userTmp.password = await argon2.hash(userTmp.password);
+    const res = await this.userRepository.save(userTmp);
+    return res;
+    // } catch (error) {
+    //   console.log(
+    //     '🚀 ~ file: user.service.ts ~ line 93 ~ UserService ~ create ~ error',
+    //     error,
+    //   );
+    //   if (error.errno && error.errno === 1062) {
+    //     throw new HttpException(error.sqlMessage, 500);
+    //   }
+    // }
+  }
+}
