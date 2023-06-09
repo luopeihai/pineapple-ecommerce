@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { getUserDto } from './dto/get-user.dto';
 import { conditionUtils } from 'src/utils/db.helper';
@@ -82,12 +82,10 @@ export class UserService {
   }
 
   async create(user: Partial<User>) {
-
-    const userTmp = await this.userRepository.create(user);
     // try {
     // 对用户密码使用argon2加密
-    userTmp.password = await argon2.hash(userTmp.password);
-    const res = await this.userRepository.save(userTmp);
+    user.password = await argon2.hash(user.password || '');
+    const res = await this.userRepository.create(user).save()
     return res;
     // } catch (error) {
     //   console.log(
@@ -98,5 +96,12 @@ export class UserService {
     //     throw new HttpException(error.sqlMessage, 500);
     //   }
     // }
+
+  }
+
+  async remove(id: number) {
+    // return this.userRepository.delete(id);
+    // const user = await this.findOne(id);
+    return this.userRepository.delete(id)
   }
 }
