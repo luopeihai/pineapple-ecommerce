@@ -16,33 +16,6 @@ export class UserService {
     const { limit, page, username } = query;
     const take = limit || 10;
     const skip = ((page || 1) - 1) * take;
-    // SELECT * FROM user u, profile p, role r WHERE u.id = p.uid AND u.id = r.uid AND ....
-    // SELECT * FROM user u LEFT JOIN profile p ON u.id = p.uid LEFT JOIN role r ON u.id = r.uid WHERE ....
-    // 分页 SQL -> LIMIT 10 OFFSET 10
-    // return this.userRepository.find({
-    //   select: {
-    //     id: true,
-    //     username: true,
-    //     profile: {
-    //       gender: true,
-    //     },
-    //   },
-    //   relations: {
-    //     profile: true,
-    //     roles: true,
-    //   },
-    //   where: { // AND OR
-    //     username,
-    //     profile: {
-    //       gender,
-    //     },
-    //     roles: {
-    //       id: role,
-    //     },
-    //   },
-    //   take,
-    //   skip,
-    // });
     const obj = {
       'user.username': username
     };
