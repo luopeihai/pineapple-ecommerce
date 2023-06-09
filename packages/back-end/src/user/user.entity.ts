@@ -1,9 +1,13 @@
 // import { Exclude } from 'class-transformer';
 import {
+  BaseEntity,
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  Generated
+  Generated,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn
   // OneToMany,
   // ManyToMany,
   // JoinTable,
@@ -16,7 +20,7 @@ import {
 // import { Profile } from './profile.entity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -35,4 +39,13 @@ export class User {
     length: 100
   })
   password: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
 }
