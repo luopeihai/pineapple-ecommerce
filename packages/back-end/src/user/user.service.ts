@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -56,6 +56,10 @@ export class UserService {
 
   async create(user: Partial<User>) {
     // try {
+    //查询是否有该用户
+    const hasUser = await this.userRepository.findOne({ where: { username: user.username } });
+    if (hasUser) throw new HttpException("该用户已存在", 500);
+
     // 对用户密码使用argon2加密
     user.password = await argon2.hash(user.password || '');
     const res = await this.userRepository.create(user).save()

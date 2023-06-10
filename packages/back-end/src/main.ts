@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import rateLimit from 'express-rate-limit';
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter"
+import { TransformInterceptor } from "./common/interceptors/transform.interceptor"
 import { AppModule } from './app.module';
 import { getServerConfig } from "./config";
 import { ConfigEnum } from "./config/enum"
@@ -13,6 +15,9 @@ async function bootstrap() {
 
   const port = config[ConfigEnum.APP_PORT]
   app.setGlobalPrefix('api/v1');
+  app.useGlobalFilters(new HttpExceptionFilter());
+  // 全局注册拦截器
+  app.useGlobalInterceptors(new TransformInterceptor());
   // rateLimit限流
   app.use(
     rateLimit({

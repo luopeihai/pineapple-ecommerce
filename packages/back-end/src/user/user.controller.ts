@@ -18,7 +18,7 @@ import { PublicUserDto } from './dto/public-user.dto';
 import { TypeormFilter } from "../common/filters/typeorm.filter"
 
 @Controller('user')
-@UseFilters(new TypeormFilter())
+// @UseFilters(new TypeormFilter())
 
 export class UserController {
   // private logger = new Logger(UserController.name);
