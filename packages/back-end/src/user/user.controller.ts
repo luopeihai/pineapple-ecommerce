@@ -19,7 +19,7 @@ import { TypeormFilter } from "../common/filters/typeorm.filter"
 
 @Controller('user')
 @UseFilters(new TypeormFilter())
-@Serialize(PublicUserDto)
+
 export class UserController {
   // private logger = new Logger(UserController.name);
 
@@ -34,11 +34,7 @@ export class UserController {
   getUsers(@Query() query: getUserDto): any {
     // page - 页码，limit - 每页条数，condition-查询条件(username, role, gender)，sort-排序
     // 前端传递的Query参数全是string类型，需要转换成number类型
-    // this.logger.log(`请求getUsers成功`);
-    // this.logger.warn(`请求getUsers成功`);
-    // this.logger.error(`请求getUsers成功`);
     return this.userService.findAll(query);
-    // return this.userService.getUsers();
   }
 
 
@@ -50,6 +46,7 @@ export class UserController {
 
 
   @Post()
+  @Serialize(PublicUserDto)
   addUser(@Body(CreateUserPipe) dto: CreateUserDto): any {
     const user = dto as User;
     return this.userService.create(user);

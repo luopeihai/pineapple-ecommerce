@@ -10,4 +10,10 @@ export class PublicUserDto {
 
   @Exclude()
   password: string;
+
+  @Expose()
+  created_at: Date;
+
+  @Expose()
+  updated_at: Date;
 }

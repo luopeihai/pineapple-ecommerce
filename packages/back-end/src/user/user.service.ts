@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { getUserDto } from './dto/get-user.dto';
-import { conditionUtils } from 'src/utils/db.helper';
 import * as argon2 from 'argon2';
 
 @Injectable()
@@ -16,13 +15,14 @@ export class UserService {
     const { limit, page, username } = query;
     const take = limit || 10;
     const skip = ((page || 1) - 1) * take;
-    const obj = {
-      'user.username': username
-    };
+    // const obj = {
+    //   'user.username like :name': username
+    // };
+    // .where("user.firstName like :name", { name:`%${firstName}%` })
     // inner join vs left join vs outer join
     const queryBuilder = this.userRepository
-      .createQueryBuilder('user')
-    const newQuery = conditionUtils(queryBuilder, obj);
+      .createQueryBuilder('user').where("user.username like :name", { name: `%${username}%` })
+    // const newQuery = conditionUtils(queryBuilder, obj);
     // if (gender) {
     //   queryBuilder.andWhere('profile.gender = :gender', { gender });
     // } else {
@@ -34,7 +34,7 @@ export class UserService {
     //   queryBuilder.andWhere('roles.id IS NOT NULL');
     // }
     return (
-      newQuery
+      queryBuilder
         .take(take)
         .skip(skip)
         // .andWhere('profile.gender = :gender', { gender })
