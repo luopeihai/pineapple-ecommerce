@@ -3,19 +3,17 @@ import {
   Get,
   Post,
   Body,
-  UseFilters,
   Delete,
   Param,
   Query
 } from '@nestjs/common';
 import { User } from './user.entity';
-import { UserService } from './user.service'
-import { CreateUserDto } from "./dto/create-user.dto"
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { getUserDto } from './dto/get-user.dto';
-import { CreateUserPipe } from "./pipes/create-user.pipe"
+import { CreateUserPipe } from './pipes/create-user.pipe';
 import { Serialize } from '../common/decorators/serialize.decorator';
 import { PublicUserDto } from './dto/public-user.dto';
-import { TypeormFilter } from "../common/filters/typeorm.filter"
 
 @Controller('user')
 // @UseFilters(new TypeormFilter())
