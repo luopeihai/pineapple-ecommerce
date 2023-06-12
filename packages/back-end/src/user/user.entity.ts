@@ -6,7 +6,9 @@ import {
   Generated,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn
+  DeleteDateColumn,
+  OneToOne,
+  JoinColumn
   // OneToMany,
   // ManyToMany,
   // JoinTable,
@@ -16,7 +18,7 @@ import {
 } from 'typeorm';
 // import { Logs } from 'src/logs/logs.entity';
 // import { Roles } from 'src/roles/roles.entity';
-// import { Profile } from './profile.entity';
+import { Profile } from './profile.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -39,6 +41,11 @@ export class User extends BaseEntity {
   })
   password: string;
 
+  @OneToOne(() => Profile, (profile) => profile.user, { cascade: true })
+  // @JoinColumn({ name: 'profile_id' })
+  profile: Profile;
+
+
   @CreateDateColumn()
   created_at: Date;
 
@@ -47,4 +54,5 @@ export class User extends BaseEntity {
 
   @DeleteDateColumn()
   deleted_at: Date;
+
 }

@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { Profile } from './profile.entity';
 import { getUserDto } from './dto/get-user.dto';
 import * as argon2 from 'argon2';
 
@@ -9,6 +10,7 @@ import * as argon2 from 'argon2';
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Profile) private readonly profileRepository: Repository<Profile>,
   ) { }
 
   findAll(query: getUserDto) {
@@ -56,14 +58,28 @@ export class UserService {
 
   async create(user: Partial<User>) {
     // try {
+
+
     //查询是否有该用户
     const hasUser = await this.userRepository.findOne({ where: { username: user.username } });
     if (hasUser) throw new HttpException("该用户已存在", 500);
 
+
+
     // 对用户密码使用argon2加密
     user.password = await argon2.hash(user.password || '');
-    const res = await this.userRepository.create(user).save()
-    return res;
+
+    const newUser = await this.userRepository.create(user).save()
+
+    // 创建profile 信息
+    const profile = await this.profileRepository.save({
+      gender: 1,
+      photo: 'https://1111',
+      address: "",
+      user: newUser
+    })
+
+    return newUser;
     // } catch (error) {
     //   console.log(
     //     '🚀 ~ file: user.service.ts ~ line 93 ~ UserService ~ create ~ error',
