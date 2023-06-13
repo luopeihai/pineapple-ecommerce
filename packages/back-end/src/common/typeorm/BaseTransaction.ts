@@ -1,10 +1,10 @@
-import { Connection, EntityManager, QueryRunner } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { EntityManager, QueryRunner, DataSource } from 'typeorm';
+import { Injectable, HttpException } from '@nestjs/common';
 
 @Injectable()
 export abstract class BaseTransaction<TransactionInput, TransactionOutput> {
     protected constructor(
-        private readonly connection: Connection,
+        private readonly dataSource: DataSource,
     ) { }
 
     // this function will contain all of the operations that you need to perform
@@ -15,7 +15,7 @@ export abstract class BaseTransaction<TransactionInput, TransactionOutput> {
     ): Promise<TransactionOutput>;
 
     private async createRunner(): Promise<QueryRunner> {
-        return this.connection.createQueryRunner();
+        return this.dataSource.createQueryRunner();
     }
 
     // this is the main function that runs the transaction
@@ -32,7 +32,7 @@ export abstract class BaseTransaction<TransactionInput, TransactionOutput> {
             return result;
         } catch (error) {
             await queryRunner.rollbackTransaction();
-            throw new Error('Transaction failed');
+            throw new HttpException(error.message, 500);
         } finally {
             await queryRunner.release();
         }

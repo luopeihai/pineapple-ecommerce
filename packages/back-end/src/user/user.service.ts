@@ -1,19 +1,17 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import * as argon2 from 'argon2';
+import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Profile } from './profile.entity';
 import { getUserDto } from './dto/get-user.dto';
-// import {BaseTransaction} from "../common/typeorm/BaseTransaction"
+import { CreateUserTransaction } from "./transaction/create-user.transaction"
 
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Profile) private readonly profileRepository: Repository<Profile>,
-    private dataSource: DataSource
+    private readonly createUserTransaction: CreateUserTransaction
   ) { }
 
   findAll(query: getUserDto) {
@@ -60,36 +58,8 @@ export class UserService {
   }
 
   async create(user: Partial<User>) {
-    const createUser = Object.assign(new User(), user)
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      // 查询是否有该用户
-      const hasUser = await queryRunner.manager.findOneBy("user", { username: user.username })
-      if (hasUser) throw new HttpException("该用户已存在", 500);
-      // 对用户密码使用argon2加密
-      user.password = await argon2.hash(user.password || '');
-
-      const newUser = await queryRunner.manager.save(createUser)
-
-      // // 创建profile 信息
-      const profile = Object.assign(new Profile(), {
-        gender: 1,
-        photo: 'https://1111',
-        address: "",
-        user: newUser
-      })
-      await queryRunner.manager.save(profile)
-      await queryRunner.commitTransaction();
-      return newUser;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw new HttpException(error.message, 500);
-    } finally {
-      await queryRunner.release();
-    }
-
+    const createdUserData = await this.createUserTransaction.run(user);
+    return createdUserData;
   }
 
   async remove(id: number) {
