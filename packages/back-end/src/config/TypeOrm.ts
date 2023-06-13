@@ -48,7 +48,7 @@ export const validationSchema = Joi.object({
     LOG_LEVEL: Joi.string(),
 });
 
-export default new DataSource({
+export const dataSource = new DataSource({
     ...connectionParams,
     // migrations: ['./dist/src/migrations/**'],
     subscribers: [],

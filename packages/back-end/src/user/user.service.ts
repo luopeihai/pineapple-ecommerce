@@ -1,16 +1,19 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
+import * as argon2 from 'argon2';
 import { User } from './user.entity';
 import { Profile } from './profile.entity';
 import { getUserDto } from './dto/get-user.dto';
-import * as argon2 from 'argon2';
+// import {BaseTransaction} from "../common/typeorm/BaseTransaction"
+
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Profile) private readonly profileRepository: Repository<Profile>,
+    private dataSource: DataSource
   ) { }
 
   findAll(query: getUserDto) {
@@ -57,38 +60,35 @@ export class UserService {
   }
 
   async create(user: Partial<User>) {
-    // try {
+    const createUser = Object.assign(new User(), user)
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 查询是否有该用户
+      const hasUser = await queryRunner.manager.findOneBy("user", { username: user.username })
+      if (hasUser) throw new HttpException("该用户已存在", 500);
+      // 对用户密码使用argon2加密
+      user.password = await argon2.hash(user.password || '');
 
+      const newUser = await queryRunner.manager.save(createUser)
 
-    //查询是否有该用户
-    const hasUser = await this.userRepository.findOne({ where: { username: user.username } });
-    if (hasUser) throw new HttpException("该用户已存在", 500);
-
-
-
-    // 对用户密码使用argon2加密
-    user.password = await argon2.hash(user.password || '');
-
-    const newUser = await this.userRepository.create(user).save()
-
-    // 创建profile 信息
-    const profile = await this.profileRepository.save({
-      gender: 1,
-      photo: 'https://1111',
-      address: "",
-      user: newUser
-    })
-
-    return newUser;
-    // } catch (error) {
-    //   console.log(
-    //     '🚀 ~ file: user.service.ts ~ line 93 ~ UserService ~ create ~ error',
-    //     error,
-    //   );
-    //   if (error.errno && error.errno === 1062) {
-    //     throw new HttpException(error.sqlMessage, 500);
-    //   }
-    // }
+      // // 创建profile 信息
+      const profile = Object.assign(new Profile(), {
+        gender: 1,
+        photo: 'https://1111',
+        address: "",
+        user: newUser
+      })
+      await queryRunner.manager.save(profile)
+      await queryRunner.commitTransaction();
+      return newUser;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, 500);
+    } finally {
+      await queryRunner.release();
+    }
 
   }
 
