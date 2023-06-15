@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import rateLimit from 'express-rate-limit';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter"
 import { TransformInterceptor } from "./common/interceptors/transform.interceptor"
 import { AppModule } from './app.module';
@@ -14,8 +15,14 @@ async function bootstrap() {
   const config = getServerConfig();
 
   const port = config[ConfigEnum.APP_PORT]
+
+
+  // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const nestWinston = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  app.useLogger(nestWinston);
+
   app.setGlobalPrefix('api/v1');
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(nestWinston.logger));
   // 全局注册拦截器
   app.useGlobalInterceptors(new TransformInterceptor());
   // rateLimit限流
