@@ -5,7 +5,8 @@ import {
   Body,
   Delete,
   Param,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common';
 import { User } from './user.entity';
 import { UserService } from './user.service';
@@ -13,11 +14,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { getUserDto } from './dto/get-user.dto';
 import { CreateUserPipe } from './pipes/create-user.pipe';
 import { Serialize } from '../common/decorators/serialize.decorator';
+import { JwtGuard } from "../common/guards/jwt.guard"
 import { PublicUserDto } from './dto/public-user.dto';
 
 @Controller('user')
 // @UseFilters(new TypeormFilter())
-
+@UseGuards(JwtGuard)
 export class UserController {
   // private logger = new Logger(UserController.name);
 
