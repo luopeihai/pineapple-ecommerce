@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninUserDto } from './dto/signin-user.dto';
+import { Serialize } from '../common/decorators/serialize.decorator';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
