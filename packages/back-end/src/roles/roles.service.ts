@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -12,6 +12,10 @@ export class RolesService {
   ) { }
 
   async create(createRoleDto: CreateRoleDto) {
+
+    const hasRole = await this.roleRepository.findOne({ where: { name: createRoleDto.name } });
+    if (hasRole) throw new HttpException("该角色已存在", 500);
+
     const role = await this.roleRepository.create(createRoleDto);
     return this.roleRepository.save(role);
   }
