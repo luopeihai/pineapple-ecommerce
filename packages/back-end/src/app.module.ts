@@ -12,7 +12,8 @@ import { connectionParams, validationSchema } from './config/TypeOrm';
 import { ConfigEnum } from './config/enum';
 
 import { UserModule } from './user/user.module';
-import { AuthModule } from "./auth/auth.module"
+import { AuthModule } from "./auth/auth.module";
+import { RolesModule } from './roles/roles.module';
 const envFilePath = `.env.${process.env.NODE_ENV || `development`}`;
 
 const format = winston.format;
@@ -99,7 +100,8 @@ Global()
       ],
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    RolesModule
   ],
   controllers: [],
   providers: [

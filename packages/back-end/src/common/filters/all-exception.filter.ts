@@ -3,10 +3,10 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  UnauthorizedException,
   HttpStatus
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { TypeORMError } from 'typeorm';
 import { Logger } from "winston";
 
 @Catch()
@@ -26,7 +26,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       code = exception.getStatus()
       message = exception.message
+    } else if (exception instanceof TypeORMError) {
+      message = exception.message
     }
+
+
 
     const responseBody = {
       code,

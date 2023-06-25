@@ -38,8 +38,8 @@ export class AuthController {
     };
   }
 
-  // @Post('/signup')
-  // // @UseInterceptors(SerializeInterceptor)
+  //@Post('/signup')
+  // @UseInterceptors(SerializeInterceptor)
   // signup(@Body() dto: SigninUserDto) {
   //   const { username, password } = dto;
   //   // if (!username || !password) {

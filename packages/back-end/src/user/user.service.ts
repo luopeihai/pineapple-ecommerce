@@ -23,8 +23,13 @@ export class UserService {
     // };
     // .where("user.firstName like :name", { name:`%${firstName}%` })
     // inner join vs left join vs outer join
-    const queryBuilder = this.userRepository
-      .createQueryBuilder('user').where("user.username like :name", { name: `%${username}%` })
+    let queryBuilder = this.userRepository
+      .createQueryBuilder('user').leftJoinAndSelect('user.profile', 'profile').leftJoinAndSelect('user.roles', 'roles')
+
+    // console.log('username', username)
+    if (username) {
+      queryBuilder = queryBuilder.where("user.username like :name", { name: `%${username}%` })
+    }
     // const newQuery = conditionUtils(queryBuilder, obj);
     // if (gender) {
     //   queryBuilder.andWhere('profile.gender = :gender', { gender });
@@ -36,14 +41,12 @@ export class UserService {
     // } else {
     //   queryBuilder.andWhere('roles.id IS NOT NULL');
     // }
-    return (
-      queryBuilder
-        .take(take)
-        .skip(skip)
-        // .andWhere('profile.gender = :gender', { gender })
-        // .andWhere('roles.id = :role', { role })
-        .getMany()
-    );
+    const result = queryBuilder
+      .take(take)
+      .skip(skip)
+      .getMany()
+
+    return result
   }
 
   find(username: string) {

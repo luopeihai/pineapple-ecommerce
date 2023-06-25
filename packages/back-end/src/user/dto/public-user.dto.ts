@@ -1,4 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
+import { Roles } from 'src/roles/roles.entity';
+import { Profile } from '../profile.entity';
 
 
 export class PublicUserDto {
@@ -7,6 +9,12 @@ export class PublicUserDto {
 
   @Expose()
   username: string;
+
+  @Expose()
+  profile: Profile;
+
+  @Expose()
+  roles: Roles[];
 
   @Exclude()
   password: string;
