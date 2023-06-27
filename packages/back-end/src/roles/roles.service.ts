@@ -3,11 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Roles } from './roles.entity';
+import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class RolesService {
   constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Roles) private roleRepository: Repository<Roles>,
   ) { }
 
@@ -41,8 +43,17 @@ export class RolesService {
     return this.roleRepository.save(newRole);
   }
 
-  remove(id: number) {
-    // delete  -> AfterRemove 不会触发
-    return this.roleRepository.delete(id);
+  async remove(id: number) {
+    const role = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .where('roles.id = :id', { id })
+      .getOne()
+
+    if (role) {
+      throw new HttpException("该角色有绑定用户不可以删除", 500);
+    } else {
+      return this.roleRepository.createQueryBuilder('roles').where("roles.id = :id", { id }).softDelete().execute()
+    }
   }
 }
