@@ -66,8 +66,8 @@ export class UserService {
   }
 
   async remove(id: number) {
-    // return this.userRepository.delete(id);
-    // const user = await this.findOne(id);
-    return this.userRepository.createQueryBuilder('user').where("user.id = :id", { id }).softDelete().execute()
+    return this.userRepository.delete(id);
+    // 软删除
+    // return this.userRepository.createQueryBuilder('user').where("user.id = :id", { id }).softDelete().execute()
   }
 }

@@ -29,6 +29,13 @@ declare namespace API {
     currentAuthority?: string;
   };
 
+
+  type FetchResult = {
+    code?: string;
+    message?: string;
+    data?: any;
+  };
+
   type PageParams = {
     current?: number;
     pageSize?: number;
