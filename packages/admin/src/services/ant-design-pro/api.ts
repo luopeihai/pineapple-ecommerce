@@ -22,7 +22,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams) {
-  return request<API.LoginResult>('/api/v1/auth/signin', {
+  return request<API.FetchResult>('/api/v1/auth/signin', {
     method: 'POST',
     headers: {
       'Content-Typesignin': 'application/json',
